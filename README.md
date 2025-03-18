@@ -1,17 +1,8 @@
-cat << 'EOF' > README.md
+
 # Predicción de Precios de Bitcoin con ARIMA
 
 Este proyecto utiliza un modelo ARIMA para predecir los precios futuros de Bitcoin (BTC-USD). Se descargan datos históricos utilizando la librería yfinance, se realiza un análisis exploratorio de la serie temporal, se ajusta un modelo ARIMA(1,1,1) y se generan predicciones para los próximos 30 días. Además, se generan gráficos que muestran el precio histórico, la serie diferenciada y la predicción.
 
-## Estructura del Proyecto
-
-bitcoin-arima/
-├── bitcoin_arima.py               # Código principal del proyecto
-├── bitcoin_precio_historico.png   # Gráfico del precio histórico de Bitcoin
-├── bitcoin_diferenciado.png       # Gráfico de la serie diferenciada de Bitcoin
-├── bitcoin_forecast.png           # Gráfico con la predicción para 30 días
-├── bitcoin_forecast.csv           # Archivo CSV con la predicción a 30 días
-└── README.md                      # Este archivo
 
 ## Requisitos
 
@@ -82,8 +73,7 @@ Para instalar las dependencias, ejecuta:
 
 ## Autor
 
-- Tu Nombre
-- Contacto: tu.email@ejemplo.com
+- Baahl11
 
 ## Licencia
 
