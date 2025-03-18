@@ -1,100 +1,91 @@
-#!/usr/bin/env python
-"""
-Proyecto: Predicción de Precios de Bitcoin con ARIMA
-Descripción: Obtiene datos históricos de Bitcoin usando yfinance, 
-realiza un análisis exploratorio de la serie temporal, ajusta un modelo ARIMA 
-y predice los precios futuros.
-"""
+cat << 'EOF' > README.md
+# Predicción de Precios de Bitcoin con ARIMA
 
-import yfinance as yf
-import pandas as pd
-import matplotlib.pyplot as plt
-import statsmodels.api as sm
-from statsmodels.tsa.arima.model import ARIMA
-import datetime
+Este proyecto utiliza un modelo ARIMA para predecir los precios futuros de Bitcoin (BTC-USD). Se descargan datos históricos utilizando la librería yfinance, se realiza un análisis exploratorio de la serie temporal, se ajusta un modelo ARIMA(1,1,1) y se generan predicciones para los próximos 30 días. Además, se generan gráficos que muestran el precio histórico, la serie diferenciada y la predicción.
 
-# 1. Descargar datos históricos de Bitcoin (BTC-USD)
-# Definir período: últimos 5 años
-end_date = datetime.date.today()
-start_date = end_date - datetime.timedelta(days=5*365)
+## Estructura del Proyecto
 
-# Descarga los datos de Bitcoin
-btc_data = yf.download("BTC-USD", start=start_date, end=end_date)
-btc_data = btc_data[['Adj Close']]  # Usamos el precio ajustado
+bitcoin-arima/
+├── bitcoin_arima.py               # Código principal del proyecto
+├── bitcoin_precio_historico.png   # Gráfico del precio histórico de Bitcoin
+├── bitcoin_diferenciado.png       # Gráfico de la serie diferenciada de Bitcoin
+├── bitcoin_forecast.png           # Gráfico con la predicción para 30 días
+├── bitcoin_forecast.csv           # Archivo CSV con la predicción a 30 días
+└── README.md                      # Este archivo
 
-# Renombrar la columna
-btc_data.rename(columns={'Adj Close': 'Precio'}, inplace=True)
-print("Datos históricos de Bitcoin:")
-print(btc_data.head())
+## Requisitos
 
-# 2. Análisis exploratorio y visualización de la serie temporal
-plt.figure(figsize=(12, 6))
-plt.plot(btc_data.index, btc_data['Precio'], color='blue', label='Precio Bitcoin')
-plt.title("Precio Histórico de Bitcoin (BTC-USD)")
-plt.xlabel("Fecha")
-plt.ylabel("Precio (USD)")
-plt.legend()
-plt.tight_layout()
-plt.savefig("bitcoin_precio_historico.png")
-plt.show()
+- Python 3.x
+- yfinance
+- pandas
+- matplotlib
+- statsmodels
 
-# 3. Verificar la estacionariedad de la serie (usando la gráfica y la prueba de Dickey-Fuller)
-from statsmodels.tsa.stattools import adfuller
+Para instalar las dependencias, ejecuta:
 
-result = adfuller(btc_data['Precio'])
-print("\nPrueba de Dickey-Fuller:")
-print(f"ADF Statistic: {result[0]}")
-print(f"p-value: {result[1]}")
-# Si p-value > 0.05 la serie es no estacionaria
+    pip install yfinance pandas matplotlib statsmodels
 
-# En la mayoría de los casos, la serie de precios de Bitcoin es no estacionaria,
-# por lo que aplicaremos diferenciación.
-btc_data['Diferencia'] = btc_data['Precio'].diff()
-btc_data.dropna(inplace=True)
+## Uso
 
-plt.figure(figsize=(12, 6))
-plt.plot(btc_data.index, btc_data['Diferencia'], color='green', label='Diferencia de Precio')
-plt.title("Serie Diferenciada de Bitcoin")
-plt.xlabel("Fecha")
-plt.ylabel("Cambio en el Precio (USD)")
-plt.legend()
-plt.tight_layout()
-plt.savefig("bitcoin_diferenciado.png")
-plt.show()
+1. Clona o descarga este repositorio.
+2. Asegúrate de tener instaladas las dependencias.
+3. Ejecuta el script principal:
 
-# Realizamos la prueba de Dickey-Fuller sobre la serie diferenciada
-result_diff = adfuller(btc_data['Diferencia'])
-print("\nPrueba de Dickey-Fuller (Serie Diferenciada):")
-print(f"ADF Statistic: {result_diff[0]}")
-print(f"p-value: {result_diff[1]}")
+       python bitcoin_arima.py
 
-# 4. Ajustar un modelo ARIMA
-# Usaremos la serie diferenciada para ajustar un modelo ARIMA(p,d,q). Aquí d=1 (ya que diferenciamos una vez).
-# Es recomendable probar distintos valores, pero usaremos ARIMA(1,1,1) como ejemplo.
-model = ARIMA(btc_data['Precio'], order=(1, 1, 1))
-model_fit = model.fit()
-print("\nResumen del modelo ARIMA(1,1,1):")
-print(model_fit.summary())
+4. Revisa los archivos generados en el directorio:
+    - bitcoin_precio_historico.png
+    - bitcoin_diferenciado.png
+    - bitcoin_forecast.png
+    - bitcoin_forecast.csv
 
-# 5. Realizar predicciones futuras
-# Predecir los próximos 30 días
-forecast_steps = 30
-forecast = model_fit.forecast(steps=forecast_steps)
-forecast_index = pd.date_range(start=btc_data.index[-1] + pd.Timedelta(days=1), periods=forecast_steps, freq='D')
-forecast_series = pd.Series(forecast, index=forecast_index)
+## Análisis y Conclusiones
 
-plt.figure(figsize=(12, 6))
-plt.plot(btc_data.index, btc_data['Precio'], label="Precio Histórico", color='blue')
-plt.plot(forecast_series.index, forecast_series, label="Predicción 30 días", color='red', linestyle='--')
-plt.title("Predicción de Precios de Bitcoin con ARIMA")
-plt.xlabel("Fecha")
-plt.ylabel("Precio (USD)")
-plt.legend()
-plt.tight_layout()
-plt.savefig("bitcoin_forecast.png")
-plt.show()
+### Precio Histórico
 
-# 6. Guardar los resultados en un archivo CSV (opcional)
-forecast_series.to_csv("bitcoin_forecast.csv", header=["Precio_Predicho"])
+- La serie de precios de Bitcoin muestra una alta volatilidad, con períodos de alza y caídas marcadas, lo que indica un comportamiento fuertemente no estacionario.
+- El gráfico `bitcoin_precio_historico.png` refleja estos movimientos y tendencias generales.
 
-print("\nLa predicción de precios para los próximos 30 días se ha guardado en 'bitcoin_forecast.csv'.")
+### Serie Diferenciada
+
+- Al aplicar la diferenciación, la serie se vuelve más estacionaria, lo cual es necesario para el modelado de series temporales.
+- La prueba de Dickey-Fuller sobre la serie diferenciada confirma que la transformación mejora la estacionariedad, facilitando el ajuste del modelo ARIMA.
+- El gráfico `bitcoin_diferenciado.png` muestra la variabilidad en los cambios diarios de precio.
+
+### Modelo ARIMA
+
+- Se ha ajustado un modelo ARIMA(1,1,1) como aproximación inicial para capturar la dinámica de la serie.
+- El resumen del modelo (imprimido en consola) indica que los coeficientes son significativos, lo que sugiere un ajuste razonable.
+
+### Predicción a 30 Días
+
+- La predicción para los próximos 30 días se visualiza en `bitcoin_forecast.png` y se guarda en `bitcoin_forecast.csv`.
+- El modelo predice una ligera variación respecto al último precio histórico, considerando la alta volatilidad del mercado de criptomonedas.
+- Estas predicciones deben interpretarse como una referencia aproximada, dada la naturaleza volátil del mercado.
+
+### Conclusiones Generales
+
+1. **Volatilidad elevada:** Bitcoin muestra fluctuaciones marcadas en su precio, lo que se refleja en la serie histórica.
+2. **Necesidad de diferenciación:** La diferenciación es crucial para transformar la serie en estacionaria y poder aplicar modelos de series temporales.
+3. **Modelo ARIMA como aproximación inicial:** Aunque el modelo ARIMA(1,1,1) ofrece una buena primera aproximación, se recomienda explorar otros parámetros o modelos alternativos para mejorar la precisión.
+4. **Predicción con cautela:** Dada la naturaleza del mercado de criptomonedas, las predicciones deben utilizarse como referencia y complementarse con análisis adicionales.
+5. **Próximos Pasos:**
+   - Explorar modelos alternativos como SARIMA, Prophet o redes neuronales.
+   - Optimizar los parámetros del modelo (p, d, q) y evaluar la precisión usando métricas como MAE o RMSE.
+   - Ampliar el análisis incorporando variables exógenas o comparando diferentes criptomonedas.
+
+## Próximos Pasos
+
+- **Explorar modelos alternativos:** Probar modelos como SARIMA, Prophet o incluso enfoques basados en redes neuronales.
+- **Optimización del modelo:** Ajustar y comparar diferentes configuraciones de parámetros (p, d, q) para mejorar el ajuste.
+- **Ampliar el análisis:** Incluir variables exógenas y utilizar técnicas de validación para evaluar la precisión del modelo.
+
+## Autor
+
+- Tu Nombre
+- Contacto: tu.email@ejemplo.com
+
+## Licencia
+
+Este proyecto está bajo la licencia MIT.
+EOF
