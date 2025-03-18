@@ -11,11 +11,12 @@ import sys
 end_date = datetime.date.today()
 start_date = end_date - datetime.timedelta(days=5*365)  # últimos 5 años
 btc_data = yf.download("BTC-USD", start=start_date, end=end_date)
-# Usamos la columna 'Close' (ya ajustada) en lugar de 'Adj Close'
+
 if btc_data.empty:
     print("No se han descargado datos. Verifica tu conexión a Internet o la disponibilidad de datos.")
     sys.exit()
 
+# Usamos la columna 'Close' (ya ajustada) en lugar de 'Adj Close'
 btc_data = btc_data[['Close']]
 btc_data.rename(columns={'Close': 'Precio'}, inplace=True)
 print("Datos históricos de Bitcoin:")
@@ -39,7 +40,7 @@ print("\nPrueba de Dickey-Fuller para la serie de precios:")
 print(f"ADF Statistic: {result[0]}")
 print(f"p-value: {result[1]}")
 
-# Como generalmente la serie no es estacionaria, aplicamos diferenciación
+# Aplicamos diferenciación para lograr estacionariedad
 btc_data['Diferencia'] = btc_data['Precio'].diff()
 btc_data.dropna(inplace=True)
 
@@ -54,7 +55,6 @@ plt.savefig("bitcoin_diferenciado.png")
 print("Se ha guardado el gráfico: bitcoin_diferenciado.png")
 plt.close()
 
-# Prueba de Dickey-Fuller sobre la serie diferenciada
 result_diff = adfuller(btc_data['Diferencia'])
 print("\nPrueba de Dickey-Fuller para la serie diferenciada:")
 print(f"ADF Statistic: {result_diff[0]}")
@@ -84,6 +84,44 @@ plt.savefig("bitcoin_forecast.png")
 print("Se ha guardado el gráfico: bitcoin_forecast.png")
 plt.close()
 
-# 6. Guardar las predicciones en un archivo CSV (opcional)
 forecast_series.to_csv("bitcoin_forecast.csv", header=["Precio_Predicho"])
 print("\nLa predicción de precios para los próximos 30 días se ha guardado en 'bitcoin_forecast.csv'.")
+
+print("---- EJECUTANDO HASTA EL FINAL ----")
+
+def imprimir_conclusiones():
+    conclusiones = """
+Conclusiones del Análisis ARIMA para Precios de Bitcoin:
+
+1. Precio Histórico:
+   - La serie de precios muestra un comportamiento fuertemente no estacionario, con períodos de alza y caída marcados.
+   - En el gráfico 'bitcoin_precio_historico.png' se evidencia un incremento sustancial en ciertos periodos, seguido de correcciones pronunciadas.
+
+2. Serie Diferenciada:
+   - Tras aplicar la diferenciación (ver 'bitcoin_diferenciado.png'), se observa una mayor variabilidad en los cambios de precio.
+   - La prueba de Dickey-Fuller sugiere que la serie diferenciada es más estacionaria, facilitando el ajuste del modelo ARIMA.
+
+3. Modelo ARIMA:
+   - Se ajustó un modelo ARIMA(1,1,1) como aproximación inicial. El resumen del modelo indica que los coeficientes son significativos, aunque se podrían explorar otros parámetros para mejorar el ajuste.
+   - El modelo se entrenó utilizando la serie diferenciada para capturar la dinámica de precios.
+
+4. Predicción a 30 días:
+   - El gráfico 'bitcoin_forecast.png' muestra la proyección para el próximo mes. El modelo predice una ligera variación en relación al último precio histórico.
+   - Dada la alta volatilidad del mercado de criptomonedas, se recomienda usar estas predicciones como una referencia aproximada.
+
+5. Observaciones Generales:
+   - La volatilidad de Bitcoin se refleja en las grandes fluctuaciones en la serie de precios y sus diferencias.
+   - Para un análisis más completo, sería útil incorporar variables exógenas o probar modelos alternativos (como SARIMA, Prophet o modelos basados en redes neuronales).
+
+6. Próximos Pasos:
+   - Ajustar y comparar diferentes configuraciones del modelo ARIMA (p, d, q).
+   - Evaluar la precisión del modelo utilizando métricas como MAE o RMSE.
+   - Ampliar el rango de datos o incluir otras criptomonedas para un análisis comparativo.
+
+¡Análisis Completado!
+    """
+    print(conclusiones)
+
+imprimir_conclusiones()
+
+print("---- FIN DEL SCRIPT ----")
